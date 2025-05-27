@@ -1,0 +1,168 @@
+// prisma/schema.prisma
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+/// Roles ของผู้ใช้
+enum Role {
+  USER
+  APPROVER1
+  APPROVER2
+  APPROVER3
+  ADMIN
+}
+
+/// สถานะของฟอร์ม
+enum FormStatus {
+  DRAFT
+  PENDING_APPROVE_1
+  PENDING_APPROVE_2
+  PENDING_APPROVE_3
+  PENDING_CONFIRM
+  CONFIRMED
+  REJECTED
+  RENEWED
+}
+
+/// ประเภทการต่ออายุ/ปรับลด
+enum RenewalType {
+  EXTEND
+  REDUCE
+  INCREASE
+  CANCEL
+  MODIFY
+}
+
+/// ผู้ใช้งานระบบ
+model User {
+  userId               String               @id @default(uuid())
+  email                String               @unique
+  password             String
+  name                 String
+  role                 Role                 @default(USER)
+
+  // ความสัมพันธ์
+  forms                InsuranceForm[]      @relation("FormCreator")
+  approvals            Approval[]           @relation("ApprovalsBy")
+  adminConfirmations   AdminConfirmation[]  @relation("ConfirmsBy")
+  renewalsRequested    Renewal[]            @relation("RequestedBy")
+  historyLogs          History[]            @relation("LogsBy")
+}
+
+/// ฟอร์มคำขอประกัน
+model InsuranceForm {
+  formId               String               @id @default(uuid())
+  creator              User                 @relation("FormCreator", fields: [creatorId], references: [userId])
+  creatorId            String
+  createdDate          DateTime             @default(now())
+  status               FormStatus           @default(DRAFT)
+
+  // ข้อมูลทั่วไป
+  company              String
+  factory              String
+  address              String
+  insuranceGroup       String
+  insuranceType1       String
+  licenseNumber        String?              // optional
+  insuranceReason      String
+
+  // รายละเอียดทุนประกัน
+  insuranceAmount      BigInt               @db.BigInt
+  quantity             Int
+  placeCount           Int
+
+  // ระยะเวลา
+  startDate            DateTime
+  startTime            String
+  endDate              DateTime
+  endTime              String
+  totalDays            Int
+
+  // รายละเอียดเพิ่มเติม
+  coverageDetail       String
+  insuranceDocs        String
+  page                 Int
+
+  // หมายเหตุและอ้างอิงบริษัท
+  notes                String?
+  requestCompany       String
+  requestAddress       String
+  accountNumber        String
+  costCenter           String
+  ioNumber             Int
+  accountCode          String
+  accountName          String
+
+  // ผู้เกี่ยวข้อง
+  requester            String
+  supervisor           String
+  inspector            String
+
+  // ความสัมพันธ์กับ workflow
+  approvals            Approval[]           @relation("ApprovalsOn")
+  adminConfirmations   AdminConfirmation[]  @relation("ConfirmsOn")
+  originalRenewals     Renewal[]            @relation("OriginalForm")
+  newRenewals          Renewal[]            @relation("NewForm")
+  history              History[]            @relation("HistoryOn")
+}
+
+/// บันทึกแต่ละขั้นตอน Approver ระดับ 1–3
+model Approval {
+  approvalId           String               @id @default(uuid())
+  form                 InsuranceForm        @relation("ApprovalsOn", fields: [formId], references: [formId])
+  formId               String
+
+  approver             User                 @relation("ApprovalsBy", fields: [approverId], references: [userId])
+  approverId           String
+
+  sequence             Int                  // 1=Approver1,2=Approver2,3=Approver3
+  decision             String               // "APPROVED" หรือ "REJECTED"
+  approvedAt           DateTime?
+}
+
+/// บันทึกการ confirm/reject ฝั่ง Admin
+model AdminConfirmation {
+  confirmId            String               @id @default(uuid())
+  form                 InsuranceForm        @relation("ConfirmsOn", fields: [formId], references: [formId])
+  formId               String
+
+  admin                User                 @relation("ConfirmsBy", fields: [adminId], references: [userId])
+  adminId              String
+
+  decision             String               // "CONFIRM" หรือ "REJECT"
+  confirmedAt          DateTime?
+}
+
+/// ประวัติการ renew/log
+model History {
+  historyId            String               @id @default(uuid())
+  form                 InsuranceForm        @relation("HistoryOn", fields: [formId], references: [formId])
+  formId               String
+
+  actor                User                 @relation("LogsBy", fields: [actorId], references: [userId])
+  actorId              String
+
+  action               String               // e.g. "RENEW"
+  timestamp            DateTime             @default(now())
+}
+
+/// เก็บข้อมูลการต่ออายุ/ปรับลดฟอร์ม
+model Renewal {
+  renewalId            String               @id @default(uuid())
+
+  originalForm         InsuranceForm        @relation("OriginalForm", fields: [originalFormId], references: [formId])
+  originalFormId       String
+
+  newForm              InsuranceForm        @relation("NewForm", fields: [newFormId], references: [formId])
+  newFormId            String
+
+  requestedBy          User                 @relation("RequestedBy", fields: [requestedById], references: [userId])
+  requestedById        String
+  requestedAt          DateTime             @default(now())
+}
