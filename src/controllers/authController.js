@@ -28,7 +28,12 @@ exports.loginUser = async (req, res, next) => {
       env.jwtSecret,
       { expiresIn: '8h' }
     );
-    res.json({ token });
+    res.json({
+    id: user.userId,
+    name: user.name,
+    email: user.email,
+    role: user.role
+  });
   } catch (err) {
     next(err);
   }

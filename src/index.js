@@ -5,7 +5,8 @@ const authRoutes     = require('./routes/auth');
 const formRoutes     = require('./routes/forms');
 const approvalRoutes = require('./routes/approvals');
 const errorHandler   = require('./middlewares/errorHandler');
-
+const companiesRouter = require('./routes/companies');
+const factoriesRouter = require('./routes/factories');
 const app = express();
 const cors = require('cors');
 
@@ -13,6 +14,8 @@ app.use(cors());
 app.use(express.json());
 
 // routes
+app.use('/api/companies', companiesRouter)
+app.use('/api/factories', factoriesRouter)
 app.use('/api/auth', authRoutes);
 app.use('/api/forms', formRoutes);
 app.use('/api/approvals', approvalRoutes);

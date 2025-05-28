@@ -102,6 +102,22 @@ CREATE TABLE "Renewal" (
     CONSTRAINT "Renewal_pkey" PRIMARY KEY ("renewalId")
 );
 
+
+CREATE TABLE company (
+  id       TEXT PRIMARY KEY,
+  name     TEXT NOT NULL,
+  address  TEXT NOT NULL
+);
+
+CREATE TABLE factory (
+  id        TEXT PRIMARY KEY,
+  name      TEXT NOT NULL,
+  address   TEXT NOT NULL,
+  companyId TEXT NOT NULL REFERENCES company(id)
+);
+
+
+
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
