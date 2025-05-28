@@ -17,6 +17,14 @@ app.use('/api/auth', authRoutes);
 app.use('/api/forms', formRoutes);
 app.use('/api/approvals', approvalRoutes);
 
+app.use(
+  cors({
+    origin: "http://localhost:3000",  // your Next.js dev server
+    credentials: true,
+  })
+);
+app.use(express.json());
+
 // error handler
 app.use(errorHandler);
 
