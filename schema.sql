@@ -1,4 +1,3 @@
--- CreateEnum
 CREATE TYPE "Role" AS ENUM ('USER', 'APPROVER1', 'APPROVER2', 'APPROVER3', 'ADMIN');
 
 -- CreateEnum
@@ -103,17 +102,17 @@ CREATE TABLE "Renewal" (
 );
 
 
-CREATE TABLE company (
-  id       TEXT PRIMARY KEY,
-  name     TEXT NOT NULL,
-  address  TEXT NOT NULL
+CREATE TABLE "Company" (
+  "id"       TEXT PRIMARY KEY,
+  "name"     TEXT NOT NULL,
+  "address"  TEXT NOT NULL
 );
 
-CREATE TABLE factory (
-  id        TEXT PRIMARY KEY,
-  name      TEXT NOT NULL,
-  address   TEXT NOT NULL,
-  companyId TEXT NOT NULL REFERENCES company(id)
+CREATE TABLE "Factory" (
+  "id"        TEXT PRIMARY KEY,
+  "name"      TEXT NOT NULL,
+  "address"   TEXT NOT NULL,
+  "companyId" TEXT NOT NULL REFERENCES company(id)
 );
 
 

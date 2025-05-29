@@ -110,6 +110,23 @@ model Renewal {
   requestedBy    User          @relation("RequestedBy", fields: [requestedById], references: [userId])
 }
 
+/// เก็บข้อมูลบริษัทหลัก
+model Company {
+  id        String    @id @default(uuid())
+  name      String
+  address   String
+  factories Factory[] @relation("CompanyFactories")
+}
+
+/// เก็บข้อมูลโรงงานภายใต้บริษัท
+model Factory {
+  id        String   @id @default(uuid())
+  name      String
+  address   String
+  companyId String
+  company   Company  @relation("CompanyFactories", fields: [companyId], references: [id], onUpdate: Cascade, onDelete: Restrict)
+}
+
 /// Roles ของผู้ใช้
 enum Role {
   USER

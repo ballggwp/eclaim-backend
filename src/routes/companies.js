@@ -9,7 +9,7 @@ router.get('/', async (_req, res) => {
     // raw SQL against your lookup table
     const rows = await prisma.$queryRaw`
       SELECT id, name, address
-      FROM "company"   -- or "Company" if that’s your exact table name
+      FROM "Company"   -- or "Company" if that’s your exact table name
     `;
     return res.json(rows);
   } catch (err) {
